@@ -9,7 +9,7 @@ import (
 	"github.com/giant-stone/go/ghttp"
 	"github.com/giant-stone/go/gutil"
 
-	"github.com/zqijzqj/mtSecKill/logs"
+	"github.com/sunshibao/go-jdmt/logs"
 )
 
 func NotifyUser(v ...interface{}) {
@@ -26,7 +26,7 @@ func NotifyUser(v ...interface{}) {
 	fullurl := "https://sre24.com/api/v1/push"
 	rqBody, _ := json.Marshal(&map[string]interface{}{
 		"token": PushToken,
-		"msg": msg,
+		"msg":   msg,
 	})
 	rq := ghttp.New().
 		SetTimeout(time.Second * 3).

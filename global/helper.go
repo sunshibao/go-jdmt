@@ -15,12 +15,12 @@ func UnixMilli() int64 {
 
 func GenerateRangeNum(min, max int64) int64 {
 	rand.Seed(time.Now().UnixNano())
-	randNum := rand.Int63n(max - min) + min
+	randNum := rand.Int63n(max-min) + min
 	return randNum
 }
 
 func Hour2Unix(hour string) (time.Time, error) {
-	return time.ParseInLocation(DateTimeFormatStr, time.Now().Format(DateFormatStr) + " " + hour, time.Local)
+	return time.ParseInLocation(DateTimeFormatStr, time.Now().Format(DateFormatStr)+" "+hour, time.Local)
 }
 
 func Md5(s string) string {
@@ -35,10 +35,9 @@ func Json2Map(j string) map[string]interface{} {
 	return r
 }
 
-
 func RandFloats(min, max float64, n int) float64 {
 	rand.Seed(time.Now().UnixNano())
-	res := min + rand.Float64() * (max - min)
-	res, _ =  strconv.ParseFloat(fmt.Sprintf("%."+strconv.Itoa(n)+"f", res), 64)
+	res := min + rand.Float64()*(max-min)
+	res, _ = strconv.ParseFloat(fmt.Sprintf("%."+strconv.Itoa(n)+"f", res), 64)
 	return res
 }

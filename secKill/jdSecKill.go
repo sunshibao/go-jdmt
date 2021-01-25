@@ -11,10 +11,10 @@ import (
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/cdproto/target"
 	"github.com/chromedp/chromedp"
+	"github.com/sunshibao/go-jdmt/chromedpEngine"
+	"github.com/sunshibao/go-jdmt/global"
+	"github.com/sunshibao/go-jdmt/logs"
 	"github.com/tidwall/gjson"
-	"github.com/zqijzqj/mtSecKill/chromedpEngine"
-	"github.com/zqijzqj/mtSecKill/global"
-	"github.com/zqijzqj/mtSecKill/logs"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -48,7 +48,7 @@ type jdSecKill struct {
 	IsOk        bool
 	StartTime   time.Time
 	DiffTime    int64
-	PayPwd string
+	PayPwd      string
 }
 
 func NewJdSecKill(execPath string, skuId string, num, works int) *jdSecKill {
@@ -115,7 +115,7 @@ func (jsk *jdSecKill) GetReq(reqUrl string, params map[string]string, referer st
 	if resp.StatusCode != 200 {
 		logs.PrintlnWarning("httpCode: ", resp.StatusCode, "reqUrl: ", resp.Request.URL)
 	}
-	//设置cookie到浏览器
+	// 设置cookie到浏览器
 	for _, respCookie := range resp.Cookies() {
 		ok, err := network.SetCookie(respCookie.Name, respCookie.Value).WithURL(resp.Request.URL.String()).Do(ctx)
 		if !ok {
@@ -168,7 +168,7 @@ func (jsk *jdSecKill) PostReq(reqUrl string, params url.Values, referer string, 
 	if resp.StatusCode != 200 {
 		logs.PrintlnWarning("httpCode: ", resp.StatusCode, "reqUrl: ", resp.Request.URL)
 	}
-	//设置cookie到浏览器
+	// 设置cookie到浏览器
 	for _, respCookie := range resp.Cookies() {
 		_, _ = network.SetCookie(respCookie.Name, respCookie.Value).WithURL(resp.Request.URL.String()).Do(ctx)
 	}
@@ -191,7 +191,7 @@ func FormatJdResponse(b []byte, prefix string, isConvertStr bool) gjson.Result {
 	}
 	r = strings.TrimSpace(r)
 	if prefix != "" {
-		//这里针对http连接 自动提取jsonp的callback
+		// 这里针对http连接 自动提取jsonp的callback
 		if strings.HasPrefix(prefix, "http") {
 			pUrl, err := url.Parse(prefix)
 			if err == nil {
@@ -207,7 +207,7 @@ func FormatJdResponse(b []byte, prefix string, isConvertStr bool) gjson.Result {
 	return gjson.Parse(r)
 }
 
-//初始化监听请求数据
+// 初始化监听请求数据
 func (jsk *jdSecKill) InitActionFunc() chromedp.ActionFunc {
 	return func(ctx context.Context) error {
 		jsk.bCtx = ctx
@@ -266,13 +266,13 @@ func (jsk *jdSecKill) Run() error {
 						jsk.FetchSecKillUrl()
 						logs.PrintlnInfo("正在访问抢购连接......")
 						_, err := jsk.GetReq(jsk.SecKillUrl, nil, "https://item.jd.com/"+jsk.SkuId+".html", jsk.bCtx, true)
-						//这里访问会响应302 禁止重定向后就会是空数据 所以这里空数据是正常的
+						// 这里访问会响应302 禁止重定向后就会是空数据 所以这里空数据是正常的
 						if err == nil || err.Error() == ErrEmptyData.Error() {
 							break
 						}
 					}
-					SecKillRE:
-					//请求抢购连接，提交订单
+				SecKillRE:
+					// 请求抢购连接，提交订单
 					err := jsk.ReqSubmitSecKillOrder(jsk.bCtx)
 					if err != nil {
 						logs.PrintlnInfo(err, "等待重试")
@@ -308,13 +308,13 @@ func (jsk *jdSecKill) WaitStart() {
 			return
 		default:
 		}
-		d := global.UnixMilli()-jsk.DiffTime
+		d := global.UnixMilli() - jsk.DiffTime
 		if d >= st {
 			logs.PrintlnInfo("时间到达。。。。开始执行", time.Now().Format(global.DateTimeFormatStr))
 			break
 		}
-		if st - d - 4 > 0 {
-			time.Sleep(time.Duration(st - d - 4) * time.Millisecond)
+		if st-d-4 > 0 {
+			time.Sleep(time.Duration(st-d-4) * time.Millisecond)
 		}
 	}
 }
@@ -348,7 +348,7 @@ func (jsk *jdSecKill) GetEidAndFp() chromedp.ActionFunc {
 		_ = chromedp.WaitVisible("#GotoShoppingCart").Do(ctx)
 		_ = chromedp.Sleep(1 * time.Second).Do(ctx)
 		_ = chromedp.Click("#GotoShoppingCart").Do(ctx)
-		//_ = chromedp.Navigate("https://cart.jd.com/cart_index/").Do(ctx)
+		// _ = chromedp.Navigate("https://cart.jd.com/cart_index/").Do(ctx)
 		ch, cc := chromedpEngine.WaitDocumentUpdated(ctx)
 		logs.PrintlnInfo("等待购物车页面.....")
 		<-ch
@@ -356,22 +356,22 @@ func (jsk *jdSecKill) GetEidAndFp() chromedp.ActionFunc {
 		info, _ := target.GetTargetInfo().Do(ctx)
 		if strings.Contains(info.URL, "cart.jd.com/cart_index") {
 			logs.PrintlnInfo("Click, common-submit-btn")
-			_ = chromedp.Sleep(1 * time.Second).Do(ctx);
+			_ = chromedp.Sleep(1 * time.Second).Do(ctx)
 			_ = chromedp.Click(".common-submit-btn").Do(ctx)
 		} else {
 			logs.PrintlnInfo("Click, submit-btn")
 			_ = chromedp.WaitVisible("container", chromedp.ByID).Do(ctx)
-			_ = chromedp.ScrollIntoView(".submit-btn").Do(ctx);
-			_ = chromedp.Sleep(1 * time.Second).Do(ctx);
+			_ = chromedp.ScrollIntoView(".submit-btn").Do(ctx)
+			_ = chromedp.Sleep(1 * time.Second).Do(ctx)
 			_ = chromedp.Click(".submit-btn").Do(ctx)
 		}
 
-		//_ = chromedp.WaitVisible("#mainframe").Do(ctx)
+		// _ = chromedp.WaitVisible("#mainframe").Do(ctx)
 		ch, cc = chromedpEngine.WaitDocumentUpdated(ctx)
 		logs.PrintlnInfo("等待结算页加载完成..... 如遇到未选中商品错误，可手动选中后点击结算")
 		<-ch
 		cc()
-		//执行js参数 将eid和fp显示到对应元素上
+		// 执行js参数 将eid和fp显示到对应元素上
 		_ = chromedp.Sleep(3 * time.Second).Do(ctx)
 		res := make(map[string]interface{})
 		err = chromedp.Evaluate("_JdTdudfp", &res).Do(ctx)
@@ -423,12 +423,12 @@ func (jsk *jdSecKill) ReqSubmitSecKillOrder(ctx context.Context) error {
 			logs.PrintErr(r)
 		}
 	}()
-	//这里修改为直接使用http请求访问抢购结算页面 提高速度
+	// 这里修改为直接使用http请求访问抢购结算页面 提高速度
 	skUrl := fmt.Sprintf("https://marathon.jd.com/seckill/seckill.action?skuId=%s&num=%d&rid=%d", jsk.SkuId, jsk.SecKillNum, time.Now().Unix())
 	logs.PrintlnInfo("访问抢购订单结算页面......", skUrl)
 	_, _ = jsk.GetReq(skUrl, nil, "https://item.jd.com/"+jsk.SkuId+".html", ctx, true)
 
-	//这里直接使用浏览器跳转 主要目的是获取cookie
+	// 这里直接使用浏览器跳转 主要目的是获取cookie
 	/*jsk.GetReq(skUrl, nil, "https://item.jd.com/"+jsk.SkuId+".html", ctx)
 	_, _, _, _ = page.Navigate(skUrl).WithReferrer("https://item.jd.com/"+jsk.SkuId+".html").Do(ctx)*/
 

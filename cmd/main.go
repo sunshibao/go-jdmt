@@ -3,9 +3,9 @@ package main
 import (
 	"bufio"
 	"flag"
-	"github.com/zqijzqj/mtSecKill/global"
-	"github.com/zqijzqj/mtSecKill/logs"
-	"github.com/zqijzqj/mtSecKill/secKill"
+	"github.com/sunshibao/go-jdmt/global"
+	"github.com/sunshibao/go-jdmt/logs"
+	"github.com/sunshibao/go-jdmt/secKill"
 	"os"
 	"strings"
 	"time"
@@ -38,7 +38,7 @@ func main() {
 	if *brwoserPath != "" {
 		execPath = *brwoserPath
 	}
-	RE:
+RE:
 	jdSecKill := secKill.NewJdSecKill(execPath, *skuId, *num, *works)
 	jdSecKill.StartTime, err = global.Hour2Unix(*start)
 	if err != nil {
@@ -69,7 +69,7 @@ func main() {
 	err = jdSecKill.Run()
 	if err != nil {
 		if strings.Contains(err.Error(), "exec") {
-			logs.PrintlnInfo("默认浏览器执行路径未找到，"+execPath+"  请重新输入：")
+			logs.PrintlnInfo("默认浏览器执行路径未找到，" + execPath + "  请重新输入：")
 			scanner := bufio.NewScanner(os.Stdin)
 			for scanner.Scan() {
 				execPath = scanner.Text()

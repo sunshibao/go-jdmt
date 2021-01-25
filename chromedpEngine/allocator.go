@@ -8,7 +8,7 @@ import (
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/cdproto/target"
 	"github.com/chromedp/chromedp"
-	"github.com/zqijzqj/mtSecKill/logs"
+	"github.com/sunshibao/go-jdmt/logs"
 	"math/rand"
 	"net/http"
 	"sync"
@@ -26,7 +26,7 @@ var DefaultOptions = []chromedp.ExecAllocatorOption{
 	chromedp.Flag("disable-default-apps", false),
 	chromedp.Flag("no-sandbox", false),
 	// 隐身模式启动
-	//chromedp.Flag("incognito", true),
+	// chromedp.Flag("incognito", true),
 	chromedp.Flag("disable-extensions", false),
 	chromedp.Flag("disable-plugins", false),
 	chromedp.NoDefaultBrowserCheck,
@@ -35,9 +35,10 @@ var DefaultOptions = []chromedp.ExecAllocatorOption{
 
 var globalCtx *GlobalBackgroundCtx = nil
 var mu sync.Mutex
+
 type GlobalBackgroundCtx struct {
 	background context.Context
-	Cancel context.CancelFunc
+	Cancel     context.CancelFunc
 }
 
 func GetGlobalCtx() context.Context {
@@ -46,7 +47,6 @@ func GetGlobalCtx() context.Context {
 	}
 	return globalCtx.background
 }
-
 
 func NewGlobalCtx() {
 
@@ -101,11 +101,11 @@ var UserAgent = []string{
 }
 
 func GetRandUserAgent() string {
-	RE:
+RE:
 	al := len(UserAgent)
 	if al > 1 {
 		rand.Seed(time.Now().UnixNano())
-		return  UserAgent[rand.Intn(al)]
+		return UserAgent[rand.Intn(al)]
 	}
 	goto RE
 }
@@ -127,13 +127,12 @@ func RequestByCookie(ctx context.Context, req *http.Request, isDisableRedirects 
 	}
 	for _, c := range cookies {
 		req.AddCookie(&http.Cookie{
-			Name:       c.Name,
-			Value:      c.Value,
+			Name:  c.Name,
+			Value: c.Value,
 		})
 	}
 	return httpClient.Do(req)
 }
-
 
 func CreateOptions(opts ...chromedp.ExecAllocatorOption) []chromedp.ExecAllocatorOption {
 	options := append(chromedp.DefaultExecAllocatorOptions[:], DefaultOptions...)
@@ -162,7 +161,7 @@ func WaitDocumentUpdated(ctx context.Context) (<-chan struct{}, context.CancelFu
 		}
 		if isUpdated {
 			select {
-			case <- ctxNew.Done():
+			case <-ctxNew.Done():
 			case ch <- struct{}{}:
 			}
 			close(ch)
@@ -189,7 +188,7 @@ func NewExecRemoteCtx(remoteWs string, opts ...chromedp.ExecAllocatorOption) (co
 }
 
 func NewExecAllocator(tasks chromedp.Tasks, opts ...chromedp.ExecAllocatorOption) error {
-	//超时设置
+	// 超时设置
 	topC, topCC := context.WithCancel(GetGlobalCtx())
 	defer topCC()
 	c, cc := chromedp.NewExecAllocator(topC, CreateOptions(opts...)...)
@@ -205,7 +204,7 @@ func NewExecAllocator(tasks chromedp.Tasks, opts ...chromedp.ExecAllocatorOption
 	return nil
 }
 
-//阻塞浏览器方法
+// 阻塞浏览器方法
 func WaitAction(wait sync.WaitGroup) chromedp.ActionFunc {
 	return func(ctx context.Context) error {
 		wait.Add(1)
